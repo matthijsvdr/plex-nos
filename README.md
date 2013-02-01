@@ -13,6 +13,7 @@ Als de huidige dag nog geen video's heeft zijn de meeste opties leeg.
 Icontjes voor in plex
 
 
-Plants
+Plans:
+
 Video bekijken van andere datums dan vandaag
 Audio fragmenten
