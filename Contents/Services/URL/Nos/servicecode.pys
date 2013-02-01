@@ -7,28 +7,37 @@ HTTP_IPAD_UA = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 6_0_1 like Mac OS X) Ap
 
 ####################################################################################################
 
+def jsonUrl(part_url):
+    if ('nieuwsuur' in part_url) or ('koningshuis' in part_url):
+        split_url = part_url.split('/video/')
+        split_url = split_url[1].split('-')
+        video_id = split_url[0]        
+    elif 'uitzendingen' in part_url:
+        split_url = part_url.split('/uitzendingen/')
+        split_url = split_url[1].split('-')
+        video_id = split_url[0]
+        return JSON.ObjectFromURL("http://nos.nl/playlist/uitzending/mp4-web03/"+video_id+".json")
+    else:
+        split_url = part_url.split('/video/')
+        split_url = split_url[1].split('-')
+        video_id = split_url[0]
+    return JSON.ObjectFromURL("http://nos.nl/playlist/video/mp4-web03/"+video_id+".json")
+
+####################################################################################################
+
 def MetadataObjectForURL(url):
     Log.Debug('test - MetadataObjectForURL')
     Log.Debug(url)
-    page = HTML.ElementFromURL(url, headers=HTTP_DESKTOP_UA, cacheTime=CACHE_1WEEK)
-
-    title = page.xpath('//div[@id="article"]/h1')[0].text
-
-    summary = page.xpath('//div[@id="uitzending-content"]/p')[1].text
-    video = page.xpath('//object[@id="videoplayer"]/param[@name="flashvars"')[0].get('value')
-    split = url.split('&file=')
-    split = split[1].split('&plugins=')
-
-    video = split[0]
-
-    imageSplit = split[1].split('&image=')
-    imageSplit = imageSplit[1].split('&googima.ad=')
-    thump = imageSplit[0]
+    # page = HTML.ElementFromURL(url, headers=HTTP_DESKTOP_UA, cacheTime=CACHE_1WEEK)
+    json_return = jsonUrl(part_url)
+    
+    video_title = json_return['title']
+    video_summary = json_return['description']
+    video_thumb = json_return['image']
+    video_url = json_return['videofile']
 
     if len(video) > 0:
-        thumb = page.xpath('//video[@id="s1_swfobject_1_html5_video"]')[0].get('poster')
-
-        return VideoClipObject(url=video, title=title, summary=summary, thumb=thumb)
+        return VideoClipObject(url=video_url, title=video_title, summary=video_summary, thumb=video_thumb)
     else:
 
         Log.Exception('An error occurred while attempting to retrieve the required meta data.')
@@ -39,7 +48,7 @@ def MetadataObjectForURL(url):
 def MediaObjectsForURL(url):
     Log.Debug('test - MetadataObjectForURL')
     container = Container.MP4
-    audio_codec = AudioCodec.AAC
+    audio_codec = AudioCodec.MP3
     video_codec = VideoCodec.H264
 
     return [MediaObject(container=container, audio_codec=audio_codec, video_codec=video_codec, parts=[PartObject(key='')])]
