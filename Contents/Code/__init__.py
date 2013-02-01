@@ -13,14 +13,14 @@ JOURNAAL_BROADCAST  = '%s/video-en-audio/journaal/pagina' % BASE_URL
 PAGE                = '%s/%d/%s/%s-%s-%s/'
 
 ART                 = 'art-default.png'
-ICON                = 'art-default.png'
-ICON_MORE           = 'art-default.png'
+ICON                = 'icon.png'
+APP_ICON            = 'icon-app.png'
 
 
 ####################################################################################################
 
 def Start():
-    Plugin.AddPrefixHandler('/video/nos', MainMenu, PLUGIN_TITLE, ICON, ART)
+    Plugin.AddPrefixHandler('/video/nos', MainMenu, PLUGIN_TITLE, APP_ICON, ART)
     Plugin.AddViewGroup('List', viewMode='List', mediaType='items')
     Plugin.AddViewGroup('InfoList', viewMode='InfoList', mediaType='items')
 
@@ -69,20 +69,14 @@ def VideosPupulairDay(url, page=1):
 def VideosPupulairWeek(url, page=1):
     return DateUrl(url) + 'populair/week/'
 
-def jsonUrl(part_url):
+def getJSON(part_url):
     if ('nieuwsuur' in part_url) or ('koningshuis' in part_url):
-        split_url = part_url.split('/video/')
-        split_url = split_url[1].split('-')
-        video_id = split_url[0]        
+        video_id = part_url.split('/video/')[1].split('-')[0]
     elif 'uitzendingen' in part_url:
-        split_url = part_url.split('/uitzendingen/')
-        split_url = split_url[1].split('-')
-        video_id = split_url[0]
+        video_id = part_url.split('/uitzendingen/')[1].split('-')[0]
         return JSON.ObjectFromURL("http://nos.nl/playlist/uitzending/mp4-web03/"+video_id+".json")
     else:
-        split_url = part_url.split('/video/')
-        split_url = split_url[1].split('-')
-        video_id = split_url[0]
+        video_id = part_url.split('/video/')[1].split('-')[0]
     return JSON.ObjectFromURL("http://nos.nl/playlist/video/mp4-web03/"+video_id+".json")
 
 ####################################################################################################
@@ -97,15 +91,9 @@ def VideosNOS(title, url, page=1, urlcode=0):
         finalUrl = VideosPupulairDay(url, page)
     elif urlcode == 3:
         finalUrl = VideosPupulairWeek(url, page)
-    
-    # dir = MediaContainer(viewGroup='List', title2=sender.itemTitle)
+
     oc = ObjectContainer(title2=title)
-    now = Datetime.Now()
     content = HTML.ElementFromURL(finalUrl)
-
-    Log.Debug('Start loop:')
-
-  # Log.Debug(len(content.xpath('//ul[@class="img-list equalheight clearfix"]/li')))
 
     for video in content.xpath('//ul[@class="img-list equalheight clearfix"]/li'):
         
@@ -116,37 +104,46 @@ def VideosNOS(title, url, page=1, urlcode=0):
         else:
             page_url = part_url
 
-        json_return = jsonUrl(part_url)        
+        json_return = getJSON(part_url)        
         video_title = json_return['title']
-        # video_summary = json_return['description']
-        # video_thumb = json_return['image']
-        # video_url = json_return['videofile']
+        video_summary = json_return['description']
+        video_thumb = json_return['image']
+        video_url = json_return['videofile']
                 
         #open second page, for full datetime
         getDate = HTML.ElementFromURL(page_url)
-        date = getDate.xpath('//ul[@class="meta clearfix"]/li')[0].text
-        video_date = Datetime.ParseDate(date, '%A %d %B %Y, %H:%M')
+        if not 'op3' in page_url:
+            date = getDate.xpath('//ul[@class="meta clearfix"]/li')[0].text
+            video_date = Datetime.ParseDate(date, '%A %d %B %Y, %H:%M')
+        else:
+            date = getDate.xpath('//ul[@class="video-meta"]/li')[0].text
+            video_date = Datetime.ParseDate(date, '%d %b %Y, %H:%M')
+
         
         # debugg lines
-        Log.Debug('--------------------video info-------------------------')
-        Log.Debug('Log Messages:')
+        Log.Debug('--------------------Log Messages: video info-------------------------')
         Log.Debug(part_url)
         Log.Debug(video_title)
-        # Log.Debug(video_summary)
-        # Log.Debug(video_url)
+        Log.Debug(video_summary)
+        Log.Debug(video_url)
         Log.Debug(video_date)
-        # Log.Debug(video_thumb)
+        Log.Debug(video_thumb)
         Log.Debug("page_url - " + page_url)
 
-        oc.add(VideoClipObject(url=page_url, title=video_title, originally_available_at=video_date ))
-        # oc.add(VideoClipObject(url=page_url, title=video_title, summary=video_summary, originally_available_at=video_date, thumb=Callback(GetThumb, url=video_thumb)))
+        oc.add(VideoClipObject(
+            url=page_url, 
+            title=video_title, 
+            summary=video_summary, 
+            originally_available_at=video_date,
+            thumb=Callback(GetThumb, url=video_thumb)))
+
+
     if len(oc) == 0:
         return MessageContainer('Geen video\'s', 'Deze directory bevat geen video\'s')
     else:
         if len(content.xpath('//div[@id="paging"]')) > 0:
-            oc.add(DirectoryObject(key=Callback(VideosNOS, title='videos', url=url, page=page + 1, urlcode=urlcode), title='Meer ...', thumb=R(ICON_MORE)))
+            oc.add(DirectoryObject(key=Callback(VideosNOS, title=title, url=url, page=page + 1, urlcode=urlcode), title='Meer ...', thumb=R(ICON)))
         return oc
-
 
 ####################################################################################################
 
