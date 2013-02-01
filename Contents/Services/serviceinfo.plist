@@ -16,6 +16,8 @@
 				<string>http://nos.nl/op3/.+</string>
 				<string>http://nos.nl/video-en-audio/.+</string>
 				<string>http://nos.nl/koningshuis/.+</string>
+				<string>http://nos.nl/uitzendingen/.+</string>
+				<string>http://nieuwsuur.nl/video/.+</string>
 			</array>
 		</dict>
 	</dict>

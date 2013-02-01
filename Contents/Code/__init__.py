@@ -3,16 +3,16 @@
 
 import re
 
-TITLE = 'Nos'
-BASE_URL = 'http://nos.nl'
-VIDEO_PAGE = '%s/video-en-audio/video/pagina' % BASE_URL
-JOURNAAL_BROADCAST = '%s/video-en-audio/journaal/pagina' % BASE_URL
+TITLE               = 'Nos'
+BASE_URL            = 'http://nos.nl'
+VIDEO_PAGE          = '%s/video-en-audio/video/pagina' % BASE_URL
+JOURNAAL_BROADCAST  = '%s/video-en-audio/journaal/pagina' % BASE_URL
 
-PAGE = '%s/%d/%s/%s-%s-%s/'
+PAGE                = '%s/%d/%s/%s-%s-%s/'
 
-ART = 'art-default.png'
-ICON = 'art-default.png'
-ICON_MORE = 'art-default.png'
+ART                 = 'art-default.png'
+ICON                = 'art-default.png'
+ICON_MORE           = 'art-default.png'
 
 
 ####################################################################################################
@@ -68,6 +68,21 @@ def VideosPupulairDay(url, page=1):
 def VideosPupulairWeek(url, page=1):
     return DateUrl(url) + 'populair/week/'
 
+def jsonUrl(part_url):
+    if ('nieuwsuur' in part_url) or ('koningshuis' in part_url):
+        split_url = part_url.split('/video/')
+        split_url = split_url[1].split('-')
+        video_id = split_url[0]        
+    elif 'uitzendingen' in part_url:
+        split_url = part_url.split('/uitzendingen/')
+        split_url = split_url[1].split('-')
+        video_id = split_url[0]
+        return JSON.ObjectFromURL("http://nos.nl/playlist/uitzending/mp4-web03/"+video_id+".json")
+    else:
+        split_url = part_url.split('/video/')
+        split_url = split_url[1].split('-')
+        video_id = split_url[0]
+    return JSON.ObjectFromURL("http://nos.nl/playlist/video/mp4-web03/"+video_id+".json")
 
 ####################################################################################################
 
@@ -91,34 +106,43 @@ def VideosNOS(title, url, page=1, urlcode=0):
   # Log.Debug(len(content.xpath('//ul[@class="img-list equalheight clearfix"]/li')))
 
     for video in content.xpath('//ul[@class="img-list equalheight clearfix"]/li'):
-        vid_url = BASE_URL + video.xpath('./a')[0].get('href')
+        
+        part_url = video.xpath('./a')[0].get('href')
 
         # some videos link to a different website -> if they go there ignore for now
+        Log.Debug('-----------------json test----------------------------')
+        Log.Debug(part_url)
 
-        if vid_url.find('nieuwsuur') == -1:
-            if vid_url.find('koningshuis') == -1:
-                vid_title = video.xpath('./a')[0].text
-                summary = video.xpath('normalize-space(./span[@class="cat"]/following-sibling::text()[1])')
-                date = video.xpath('./em')[0].text
+        if not 'nieuwsuur' in part_url:
+            page_url = BASE_URL+part_url
 
-                split = date.split(',')
-                date = split[0]
-                date = Datetime.ParseDate(date, '%m %h %Y')
+        else:
+            page_url = part_url
 
-                thumb = video.xpath('./span[@class="img-video"]/img')[0].get('src')
+        json_return = jsonUrl(part_url)
+        
+        video_title = json_return['title']
+        video_summary = json_return['description']
+        video_thumb = json_return['image']
+        video_url = json_return['videofile']
+                
+        date = video.xpath('./em')[0].text
+        split = date.split(',')
+        date = split[0]
+        video_date = Datetime.ParseDate(date, '%m %h %Y')
+        
+        # debugg lines
+        Log.Debug('--------------------video info-------------------------')
+        Log.Debug('Log Messages:')
+        Log.Debug(part_url)
+        Log.Debug(video_title)
+        Log.Debug(video_summary)
+        Log.Debug(video_url)
+        Log.Debug(video_date)
+        Log.Debug(video_thumb)
+        Log.Debug("page_url - " + page_url)
 
-                # debugg lines
-
-                Log.Debug('------------------------------------------o---')
-                Log.Debug('Log Messages:')
-                Log.Debug(url)
-                Log.Debug(vid_url)
-                Log.Debug(vid_title)
-                Log.Debug(summary)
-                Log.Debug(date)
-                Log.Debug(thumb)
-
-                oc.add(VideoClipObject(url=vid_url, title=vid_title, summary=summary, originally_available_at=date, thumb=Callback(GetThumb, url=thumb)))
+        oc.add(VideoClipObject(url=page_url, title=video_title, summary=video_summary, originally_available_at=video_date, thumb=Callback(GetThumb, url=video_thumb)))
 
     if len(oc) == 0:
         return MessageContainer('Geen video\'s', 'Deze directory bevat geen video\'s')
