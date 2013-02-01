@@ -8,7 +8,7 @@ JSON_URL = 'http://nos.nl/playlist/%s/mp4-web03/%s.json'
 
 ####################################################################################################
 
-def jsonUrl(part_url):
+def getJSON(part_url):
     if ('nieuwsuur' in part_url) or ('koningshuis' in part_url):
         video_id = part_url.split('/video/')[1].split('-')[0]
     elif 'uitzendingen' in part_url:
@@ -16,7 +16,6 @@ def jsonUrl(part_url):
         return JSON.ObjectFromURL("http://nos.nl/playlist/uitzending/mp4-web03/"+video_id+".json")
     else:
         video_id = part_url.split('/video/')[1].split('-')[0]
-        
     return JSON.ObjectFromURL("http://nos.nl/playlist/video/mp4-web03/"+video_id+".json")
 
 ####################################################################################################
@@ -25,25 +24,25 @@ def MetadataObjectForURL(url):
     Log.Debug('test - MetadataObjectForURL')
     Log.Debug(url)
 
-    json_return = jsonUrl(url)
+    json_return = getJSON(url)
 
     video_title     = json_return['title']
     video_summary   = json_return['description']
     video_thumb     = json_return['image']
     video_url       = json_return['videofile']
-    video_duration  = json_obj['duration']
+    video_duration  = json_return['duration']
 
-    if len(video) > 0:
+    if len(video_url) > 0:
         return VideoClipObject(
             url         = video_url, 
             title       = video_title, 
             summary     = video_summary, 
             thumb       = Resource.ContentsOfURLWithFallback(video_thumb, fallback='icon-default.png'),
+            # thumb       = video_thumb
             duration    = int(video_duration)*1000
             )
     else:
         Log.Exception('An error occurred while attempting to retrieve the required meta data.')
-
 
 ####################################################################################################
 
@@ -51,7 +50,7 @@ def MediaObjectsForURL(url):
     Log.Debug('test - MetadataObjectForURL')
     Log.Debug(url)
 
-    json_return = jsonUrl(url)
+    json_return = getJSON(url)
     video_url = json_return['videofile']
 
     return [
@@ -60,6 +59,7 @@ def MediaObjectsForURL(url):
             audio_codec=AudioCodec.MP3, 
             video_codec=VideoCodec.H264,
             video_resolution = 'sd', 
+            optimized_for_streaming = True,
             parts=[PartObject(key=video_url)]
         )
     ]
