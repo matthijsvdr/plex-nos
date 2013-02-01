@@ -4,23 +4,19 @@ HTTP_DESKTOP_UA = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2)
 
 HTTP_IPAD_UA = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 6_0_1 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A523 Safari/8536.25', 'Cookie': 'site_cookie_consent=yes'}
 
+JSON_URL = 'http://nos.nl/playlist/%s/mp4-web03/%s.json'
 
 ####################################################################################################
 
 def jsonUrl(part_url):
     if ('nieuwsuur' in part_url) or ('koningshuis' in part_url):
-        split_url = part_url.split('/video/')
-        split_url = split_url[1].split('-')
-        video_id = split_url[0]        
+        video_id = part_url.split('/video/')[1].split('-')[0]
     elif 'uitzendingen' in part_url:
-        split_url = part_url.split('/uitzendingen/')
-        split_url = split_url[1].split('-')
-        video_id = split_url[0]
+        video_id = part_url.split('/uitzendingen/')[1].split('-')[0]
         return JSON.ObjectFromURL("http://nos.nl/playlist/uitzending/mp4-web03/"+video_id+".json")
     else:
-        split_url = part_url.split('/video/')
-        split_url = split_url[1].split('-')
-        video_id = split_url[0]
+        video_id = part_url.split('/video/')[1].split('-')[0]
+        
     return JSON.ObjectFromURL("http://nos.nl/playlist/video/mp4-web03/"+video_id+".json")
 
 ####################################################################################################
@@ -28,18 +24,24 @@ def jsonUrl(part_url):
 def MetadataObjectForURL(url):
     Log.Debug('test - MetadataObjectForURL')
     Log.Debug(url)
-    # page = HTML.ElementFromURL(url, headers=HTTP_DESKTOP_UA, cacheTime=CACHE_1WEEK)
-    json_return = jsonUrl(part_url)
-    
-    video_title = json_return['title']
-    video_summary = json_return['description']
-    video_thumb = json_return['image']
-    video_url = json_return['videofile']
+
+    json_return = jsonUrl(url)
+
+    video_title     = json_return['title']
+    video_summary   = json_return['description']
+    video_thumb     = json_return['image']
+    video_url       = json_return['videofile']
+    video_duration  = json_obj['duration']
 
     if len(video) > 0:
-        return VideoClipObject(url=video_url, title=video_title, summary=video_summary, thumb=video_thumb)
+        return VideoClipObject(
+            url         = video_url, 
+            title       = video_title, 
+            summary     = video_summary, 
+            thumb       = Resource.ContentsOfURLWithFallback(video_thumb, fallback='icon-default.png'),
+            duration    = int(video_duration)*1000
+            )
     else:
-
         Log.Exception('An error occurred while attempting to retrieve the required meta data.')
 
 
@@ -47,8 +49,17 @@ def MetadataObjectForURL(url):
 
 def MediaObjectsForURL(url):
     Log.Debug('test - MetadataObjectForURL')
-    container = Container.MP4
-    audio_codec = AudioCodec.MP3
-    video_codec = VideoCodec.H264
+    Log.Debug(url)
 
-    return [MediaObject(container=container, audio_codec=audio_codec, video_codec=video_codec, parts=[PartObject(key='')])]
+    json_return = jsonUrl(url)
+    video_url = json_return['videofile']
+
+    return [
+        MediaObject(
+            container=Container.MP4, 
+            audio_codec=AudioCodec.MP3, 
+            video_codec=VideoCodec.H264,
+            video_resolution = 'sd', 
+            parts=[PartObject(key=video_url)]
+        )
+    ]
