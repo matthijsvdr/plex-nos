@@ -44,7 +44,7 @@ def MainMenu():
     oc.add(DirectoryObject(key=Callback(VideosNOS, title='Laatste videos', url=BASE_URL + '/video-en-audio', urlcode=0), title='Laatste videos'))
     oc.add(DirectoryObject(key=Callback(VideosNOS, title='Meest bekeken videos van vandaag', url=VIDEO_PAGE, urlcode=2), title='Meest bekeken videos van vandaag'))
     oc.add(DirectoryObject(key=Callback(VideosNOS, title='Meest bekeken deze week', url=VIDEO_PAGE, urlcode=3), title='Meest bekeken deze week'))
-    oc.add(DirectoryObject(key=Callback(VideosNOS, title='Journaaluitzendingen van vanaag', url=JOURNAAL_BROADCAST, urlcode = 1), title='Journaaluitzendingen van vanaag'))
+    oc.add(DirectoryObject(key=Callback(VideosNOS, title='Journaaluitzendingen van vandaag', url=JOURNAAL_BROADCAST, urlcode = 1), title='Journaaluitzendingen van vanaag'))
     
     return oc
 
