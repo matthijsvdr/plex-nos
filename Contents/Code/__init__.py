@@ -12,9 +12,10 @@ def Start():
 def MainMenu():
 
 	oc = ObjectContainer(no_cache=True)
+	today = Datetime.Now().strftime('%Y-%m-%d')
 
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Alle video's van vandaag", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s' % Datetime.Now().strftime('%Y-%m-%d')),
+		key = Callback(Videos, title="Alle video's van vandaag", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s' % today),
 		title = "Alle video's van vandaag"
 	))
 	oc.add(DirectoryObject(
@@ -22,15 +23,15 @@ def MainMenu():
 		title = "Laatste video's"
 	))
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Meest bekeken vandaag", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s/populair/dag/' % Datetime.Now().strftime('%Y-%m-%d')),
+		key = Callback(Videos, title="Meest bekeken vandaag", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s/populair/dag/' % today),
 		title = "Meest bekeken vandaag"
 	))
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Meest bekeken deze week", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s/populair/week/' % Datetime.Now().strftime('%Y-%m-%d')),
+		key = Callback(Videos, title="Meest bekeken deze week", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s/populair/week/' % today),
 		title = "Meest bekeken deze week"
 	))
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Journaaluitzendingen van vandaag", url='http://nos.nl/video-en-audio/journaal/pagina/%%d/datum/%s/' % Datetime.Now().strftime('%Y-%m-%d')),
+		key = Callback(Videos, title="Journaaluitzendingen van vandaag", url='http://nos.nl/video-en-audio/journaal/pagina/%%d/datum/%s/' % today),
 		title = "Journaaluitzendingen van vandaag"
 	))
 
