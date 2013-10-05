@@ -4,8 +4,8 @@ def Start():
 	ObjectContainer.title1 = 'NOS'
 
 	HTTP.CacheTime = 300
-	HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_2) AppleWebKit/536.26.17 (KHTML, like Gecko) Version/6.0.2 Safari/536.26.17'
-	HTTP.Headers['Cookie'] = 'site_cookie_consent=yes'
+	HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:23.0) Gecko/20100101 Firefox/23.0'
+	HTTP.Headers['Cookie'] = 'npo_cc=30'
 
 ####################################################################################################
 @handler('/video/nos', 'NOS')
