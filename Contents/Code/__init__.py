@@ -10,29 +10,38 @@ def Start():
 ####################################################################################################
 @handler('/video/nos', 'NOS')
 def MainMenu():
-
-	oc = ObjectContainer(no_cache=True)
-	today = Datetime.Now().strftime('%Y-%m-%d')
-
+	oc = ObjectContainer()
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Alle video's van vandaag", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s' % today),
-		title = "Alle video's van vandaag"
+		key = Callback(Videos, title="Laatste journaaluitzendingen", url='http://nos.nl/uitzending/nos-journaal'),
+		title = "Laatste journaaluitzendingen"
 	))
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Laatste video's", url='http://nos.nl/video-en-audio'),
-		title = "Laatste video's"
+		key = Callback(Videos, title="Nieuwsuur", url='http://nos.nl/uitzending/nieuwsuur'),
+		title = "Nieuwsuur"
 	))
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Meest bekeken vandaag", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s/populair/dag/' % today),
-		title = "Meest bekeken vandaag"
+		key = Callback(Videos, title="NOS op 3", url='http://nos.nl/uitzending/nos-op-3'),
+		title = "NOS op 3"
 	))
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Meest bekeken deze week", url='http://nos.nl/video-en-audio/video/pagina/%%d/datum/%s/populair/week/' % today),
-		title = "Meest bekeken deze week"
+		key = Callback(Videos, title="NOS Jeugdjournaal", url='http://nos.nl/uitzending/nos-jeugdjournaal'),
+		title = "NOS Jeugdjournaal"
 	))
 	oc.add(DirectoryObject(
-		key = Callback(Videos, title="Journaaluitzendingen van vandaag", url='http://nos.nl/video-en-audio/journaal/pagina/%%d/datum/%s/' % today),
-		title = "Journaaluitzendingen van vandaag"
+		key = Callback(Videos, title="NOS Sportjournaal", url='http://nos.nl/uitzending/nos-sportjournaal'),
+		title = "NOS Sportjournaal"
+	))
+	oc.add(DirectoryObject(
+		key = Callback(Videos, title="NOS Studio Sport", url='http://nos.nl/uitzending/nos-studio-sport'),
+		title = "NOS Studio Sport"
+	))
+	oc.add(DirectoryObject(
+		key = Callback(Videos, title="NOS Studio Sport Eredivisie", url='http://nos.nl/uitzending/nos-studio-sport-eredivisie'),
+		title = "NOS Studio Sport Eredivisie"
+	))
+	oc.add(DirectoryObject(
+		key = Callback(Videos, title="NOS Studio Voetbal", url='http://nos.nl/uitzending/nos-studio-voetbal'),
+		title = "NOS Studio Voetbal"
 	))
 
 	return oc
@@ -44,18 +53,18 @@ def Videos(title, url, page=1):
 	oc = ObjectContainer(title2=title)
 	page_url = url % page if '%d' in url else url
 	content = HTML.ElementFromURL(page_url)
-
-	for video in content.xpath('//ul[contains(@class, "img-list")]/li'):
-		video_url = video.xpath('./a/@href')[0]
+	rbar = content.xpath('.//div[contains(@class, "broadcast-player__playlist")]')[0]
+	for video in rbar.xpath('.//a[contains(@class, "broadcast-link")]'):
+		video_url = video.xpath('./@href')[0]
 
 		if not video_url.startswith('http://'):
 			video_url = 'http://nos.nl/%s' % video_url.lstrip('/')
 
-		video_title = video.xpath('./a/text()')[0].strip()
-		summary = video.xpath('./span[@class="cat"]/following-sibling::text()')[0].strip()
-		thumb = video.xpath('.//img/@src')[0].replace('/xs/', '/xl/')
-		date = video.xpath('./em/text()')[-1].split(',')[0].replace('mrt', 'mar').replace('mei', 'may').replace('okt', 'oct')
-		date = Datetime.ParseDate(date).date()
+		video_title = video.xpath('./span[contains(@class, "broadcast-link__name")]/text()')[0].strip() + ' ' + video.xpath('./time[contains(@class, "broadcast-link__date")]/text()')[0].strip()
+		summary = '' #video.xpath('./span[@class="cat"]/following-sibling::text()')[0].strip()
+		thumb = '' #video.xpath('.//img/@src')[0].replace('/xs/', '/xl/')
+		date = '' #video.xpath('./em/text()')[-1].split(',')[0].replace('mrt', 'mar').replace('mei', 'may').replace('okt', 'oct')
+		date = Datetime.ParseDate('2014/01/01').date()
 
 		oc.add(VideoClipObject(
 			url = video_url,
