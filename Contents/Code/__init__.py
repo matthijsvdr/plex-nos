@@ -61,18 +61,8 @@ def Videos(title, url, page=1):
 
 		video_url = video.xpath('./@href')[0]
 
-<<<<<<< HEAD
-    oc.add(DirectoryObject(key=Callback(VideosNOS, title='Alle videos van vandaag', url=VIDEO_PAGE, urlcode=1), title='Alle videos van vandaag'))
-    oc.add(DirectoryObject(key=Callback(VideosNOS, title='Laatste videos', url=BASE_URL + '/video-en-audio', urlcode=0), title='Laatste videos'))
-    oc.add(DirectoryObject(key=Callback(VideosNOS, title='Meest bekeken videos van vandaag', url=VIDEO_PAGE, urlcode=2), title='Meest bekeken videos van vandaag'))
-    oc.add(DirectoryObject(key=Callback(VideosNOS, title='Meest bekeken deze week', url=VIDEO_PAGE, urlcode=3), title='Meest bekeken deze week'))
-    oc.add(DirectoryObject(key=Callback(VideosNOS, title='Journaaluitzendingen van vandaag', url=JOURNAAL_BROADCAST, urlcode = 1), title='Journaaluitzendingen van vanaag'))
-    
-    return oc
-=======
 		if not video_url.startswith('http://'):
 			video_url = 'http://nos.nl/%s' % video_url.lstrip('/')
->>>>>>> plex
 
 		video_title = video.xpath('./span[contains(@class, "broadcast-link__name")]/text()')[0].strip() + ' ' + video.xpath('./time[contains(@class, "broadcast-link__date")]/text()')[0].strip()
 
